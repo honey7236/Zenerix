@@ -86,4 +86,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (aboutSection) {
         countObserver.observe(aboutSection);
     }
+
+    // 5. Video Loop with Fade Transition
+    const setupVideoLoopWithFade = (videoClass, fadeDuration = 0.8) => {
+        const video = document.querySelector(videoClass);
+        if (!video) return;
+
+        // Ensure loop attribute is removed
+        video.removeAttribute('loop');
+
+        let isFadingOut = false;
+
+        video.addEventListener('timeupdate', () => {
+            // Start fading out when the video is close to the end
+            if (video.duration && !isFadingOut) {
+                if (video.duration - video.currentTime <= fadeDuration) {
+                    isFadingOut = true;
+                    video.classList.add('video-fade-out');
+                }
+            }
+        });
+
+        video.addEventListener('ended', () => {
+            // Once the video ends, reset time and replay
+            video.currentTime = 0;
+            video.play()
+                .then(() => {
+                    // Fade back in
+                    video.classList.remove('video-fade-out');
+                    // Reset fade state for the next replay
+                    isFadingOut = false;
+                })
+                .catch(err => {
+                    console.warn("Video replay was interrupted:", err);
+                    video.classList.remove('video-fade-out');
+                    isFadingOut = false;
+                });
+        });
+    };
+
+    setupVideoLoopWithFade('.hero-video');
+    setupVideoLoopWithFade('.about-video-bg');
 });
